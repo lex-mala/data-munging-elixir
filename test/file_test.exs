@@ -3,13 +3,13 @@ defmodule Moore.FileTest do
 
   @headers ~w(Dy MxT MnT AvT HDDay AvDP 1HrP TPcpn WxType PDir AvSp Dir MxS SkyC MxR MnR AvSLP)
 
-  describe "start_link/1" do
-    setup do
-      [path: "./priv/weather.dat"]
-    end
+  setup do
+    [path: "./priv/weather.dat"]
+  end
 
+  describe "start_link/1" do
     test "works when a file is present", %{path: path} do
-      assert {:ok, _} = Moore.File.start_link(path)
+      assert start_supervised!({Moore.File, path})
     end
 
     test "raises when a file is not present" do
@@ -17,8 +17,18 @@ defmodule Moore.FileTest do
     end
 
     test "splits the file", %{path: path} do
-      {:ok, file} = Moore.File.start_link(path)
-      assert {@headers, data} = :sys.get_state(file)
+      file = start_supervised!({Moore.File, path})
+
+      for row <- file |> :sys.get_state() |> Map.get(:data) do
+        for header <- @headers do
+          assert header in Map.keys(row)
+        end
+      end
     end
+  end
+
+  test "result/1", %{path: path} do
+    file = start_supervised!({Moore.File, path})
+    assert Moore.File.result(file) == "14"
   end
 end
