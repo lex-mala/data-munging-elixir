@@ -2,15 +2,8 @@ defmodule Moore.Weather do
   @behaviour Moore.File
 
   @impl true
-  def result(rows) do
-    [{name, _} | _] =
-      rows
-      |> Enum.map(fn %{"Dy" => name, "MxT" => max, "MnT" => min} ->
-        {name, Moore.Utils.abs_diff(max, min)}
-      end)
-      |> Enum.sort_by(&elem(&1, 1), :asc)
-
-    name
+  def row_to_data(%{"Dy" => name, "MxT" => max, "MnT" => min}) do
+    {name, Moore.Utils.abs_diff(max, min)}
   end
 
   @impl true

@@ -2,15 +2,8 @@ defmodule Moore.Football do
   @behaviour Moore.File
 
   @impl true
-  def result(rows) do
-    [{name, _} | _] =
-      rows
-      |> Enum.map(fn %{"Team" => name, "F" => forced, "A" => allowed} ->
-        {name, Moore.Utils.abs_diff(forced, allowed)}
-      end)
-      |> Enum.sort_by(&elem(&1, 1), :asc)
-
-    name
+  def row_to_data(%{"Team" => name, "F" => forced, "A" => allowed}) do
+    {name, Moore.Utils.abs_diff(forced, allowed)}
   end
 
   @impl true
