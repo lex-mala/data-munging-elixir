@@ -1,28 +1,70 @@
 defmodule Moore.Football do
-  use Agent
+  @behaviour Moore.File
 
-  @divider "-------------------------------------------------------"
+  @impl true
+  def result(rows) do
+    [{name, _} | _] =
+      rows
+      |> Enum.map(fn %{"Team" => name, "F" => forced, "A" => allowed} ->
+        {name, Moore.Utils.abs_diff(forced, allowed)}
+      end)
+      |> Enum.sort_by(&elem(&1, 1), :asc)
 
-  def start_link(path) do
-    with {:ok, bin} <- File.read(path),
-         ls <- String.split(bin, "\n"),
-         trimmed <- Enum.map(ls, fn l -> String.replace(l, ~r/[ ]+/, " ") |> String.trim() end),
-         [_ | rows] <- Enum.map(trimmed, &String.split(&1, " ")),
-         without_divider <- Enum.reject(rows, &(&1 == [@divider] or &1 == [""])),
-         diffs <- Enum.map(without_divider, &parse_row/1),
-         [{name, _} | _] <- Enum.sort_by(diffs, fn {_, diff} -> diff end, :asc) do
-      Agent.start_link(fn -> %{data: diffs, result: name} end)
-    end
+    name
   end
 
-  def result(pid) do
-    Agent.get(pid, & &1.result)
+  @impl true
+  def parse_line(<<_::binary-size(3), "-", _::binary>>), do: []
+
+  def parse_line(<<
+        _::binary-size(7),
+        team::binary-size(16),
+        played::binary-size(6),
+        wins::binary-size(4),
+        losses::binary-size(4),
+        draws::binary-size(6),
+        forced::binary-size(2),
+        _::binary-size(5),
+        allowed::binary-size(6),
+        points::binary-size(3),
+        "\n"
+      >>) do
+    [
+      team,
+      played,
+      wins,
+      losses,
+      draws,
+      forced,
+      allowed,
+      points
+    ]
   end
 
-  defp parse_row([_num, name, _played, _wins, _losses, _draws, forced, "-", allowed, _pts]) do
-    with {f, _} <- Integer.parse(forced),
-         {a, _} <- Integer.parse(allowed) do
-      {name, abs(f - a)}
-    end
+  def parse_line(<<
+        _::binary-size(7),
+        team::binary-size(16),
+        played::binary-size(6),
+        wins::binary-size(4),
+        losses::binary-size(4),
+        draws::binary-size(6),
+        forced::binary-size(2),
+        _::binary-size(5),
+        allowed::binary-size(6),
+        points::binary-size(2),
+        "\n"
+      >>) do
+    [
+      team,
+      played,
+      wins,
+      losses,
+      draws,
+      forced,
+      allowed,
+      points
+    ]
   end
+
+  def parse_line(_), do: []
 end
