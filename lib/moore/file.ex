@@ -3,11 +3,12 @@ defmodule Moore.File do
   @type line() :: [String.t()]
   @type row() :: %{optional(String.t()) => String.t()}
 
+  @callback parse(Path.t()) :: String.t()
   @callback parse_line(String.t()) :: [String.t()] | []
   @callback row_to_data(row()) :: data()
 
   defmacro __using__(_) do
-    quote do
+    quote generated: true do
       @behaviour Moore.File
 
       @spec parse(Path.t()) :: String.t()
