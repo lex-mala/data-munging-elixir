@@ -8,6 +8,8 @@ defmodule Moore.File do
   @callback row_to_data(row()) :: data()
 
   defmacro __using__(_) do
+    alias Moore.File, as: P
+
     quote generated: true do
       @behaviour Moore.File
 
@@ -15,27 +17,29 @@ defmodule Moore.File do
       def parse(path) do
         with stream <- File.stream!(path),
              parsed <- Enum.map(stream, &__MODULE__.parse_line/1),
-             casted <- Enum.map(parsed, fn line -> Enum.map(line, &cast/1) end),
+             casted <- Enum.map(parsed, fn line -> Enum.map(line, &P.cast/1) end),
              [headers | lines] <- Enum.reject(casted, &(&1 == [])),
-             zipped <- zip(headers, lines),
+             zipped <- P.zip(headers, lines),
              [{result, _} | _] <- sort(zipped) do
           result
         end
       end
 
-      defp cast(val, stop \\ false)
-      defp cast(nil, _), do: nil
-      defp cast("", _), do: nil
-      defp cast(str, false), do: str |> String.trim() |> cast(true)
-      defp cast(str, _), do: str
-
       defp sort(rows) do
         rows |> Enum.map(&__MODULE__.row_to_data/1) |> Enum.sort_by(&elem(&1, 1), :asc)
       end
-
-      defp zip(headers, lines) do
-        for line <- lines, do: headers |> Enum.zip(line) |> Enum.into(%{})
-      end
     end
+  end
+
+  @spec cast(nil | String.t(), boolean()) :: nil | String.t()
+  def cast(val, stop \\ false)
+  def cast(nil, _), do: nil
+  def cast("", _), do: nil
+  def cast(str, false), do: str |> String.trim() |> cast(true)
+  def cast(str, _), do: str
+
+  @spec zip([String.t()], [String.t()]) :: [map()]
+  def zip(headers, lines) do
+    for line <- lines, do: headers |> Enum.zip(line) |> Enum.into(%{})
   end
 end
