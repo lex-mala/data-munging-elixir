@@ -1,6 +1,6 @@
 defmodule Moore do
-  alias Moore.{File, Football, Weather}
+  alias Moore.{Football, Weather}
 
-  def football, do: File.parse(Football, "priv/football.dat")
-  def weather, do: File.parse(Weather, "priv/weather.dat")
+  def football, do: Football.parse("priv/football.dat")
+  def weather, do: Weather.parse("priv/weather.dat")
 end

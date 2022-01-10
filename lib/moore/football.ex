@@ -1,5 +1,5 @@
 defmodule Moore.Football do
-  @behaviour Moore.File
+  use Moore.File
 
   @impl true
   def row_to_data(%{"Team" => name, "F" => forced, "A" => allowed}) do

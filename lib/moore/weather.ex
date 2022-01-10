@@ -1,5 +1,5 @@
 defmodule Moore.Weather do
-  @behaviour Moore.File
+  use Moore.File
 
   @impl true
   def row_to_data(%{"Dy" => name, "MxT" => max, "MnT" => min}) do
