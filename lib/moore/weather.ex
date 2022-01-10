@@ -1,4 +1,4 @@
-defmodule Moore.File do
+defmodule Moore.Weather do
   use Agent
 
   def start_link(path) do

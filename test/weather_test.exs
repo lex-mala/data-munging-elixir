@@ -1,4 +1,4 @@
-defmodule Moore.FileTest do
+defmodule Moore.WeatherTest do
   use ExUnit.Case
 
   @headers ~w(Dy MxT MnT AvT HDDay AvDP 1HrP TPcpn WxType PDir AvSp Dir MxS SkyC MxR MnR AvSLP)
@@ -9,15 +9,15 @@ defmodule Moore.FileTest do
 
   describe "start_link/1" do
     test "works when a file is present", %{path: path} do
-      assert start_supervised!({Moore.File, path})
+      assert start_supervised!({Moore.Weather, path})
     end
 
     test "raises when a file is not present" do
-      assert_raise File.Error, fn -> Moore.File.start_link("./priv/im_not_real.dat") end
+      assert_raise File.Error, fn -> Moore.Weather.start_link("./priv/im_not_real.dat") end
     end
 
     test "splits the file", %{path: path} do
-      file = start_supervised!({Moore.File, path})
+      file = start_supervised!({Moore.Weather, path})
 
       for row <- file |> :sys.get_state() |> Map.get(:data) do
         for header <- @headers do
@@ -28,7 +28,7 @@ defmodule Moore.FileTest do
   end
 
   test "result/1", %{path: path} do
-    file = start_supervised!({Moore.File, path})
-    assert Moore.File.result(file) == "14"
+    file = start_supervised!({Moore.Weather, path})
+    assert Moore.Weather.result(file) == "14"
   end
 end
